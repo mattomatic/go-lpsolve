@@ -30,42 +30,61 @@ func NewLP(rows, cols int) *LP {
 	return lp
 }
 
-func (lp *LP) Delete() {
+func (lp *LP) Delete() error {
 	_, err := C.delete_lp(lp.lprec)
-	check(err)
+	return err
 }
 
-func (lp *LP) Print() {
+func (lp *LP) Print() error {
 	_, err := C.print_lp(lp.lprec)
-	check(err)
+	return err
 }
 
-func (lp *LP) SetValue(row, col int, value Real) {
+func (lp *LP) SetValue(row, col int, value Real) error {
 	_, err := C.set_mat(lp.lprec, C.int(row), C.int(col), C.REAL(value))
-	check(err)
+	return err
 }
 
-func (lp *LP) SetConstraintType(row int, ctype ConstraintType) {
+func (lp *LP) SetRh(row int, value Real) error {
+	_, err := C.set_rh(lp.lprec, C.int(row), C.REAL(value))
+	return err
+}
+
+func (lp *LP) SetConstraintType(row int, ctype ConstraintType) error {
 	_, err := C.set_constr_type(lp.lprec, C.int(row), C.int(ctype))
-	check(err)
+	return err
 }
 
-func (lp *LP) Solve() ResultCode {
+func (lp *LP) SetObjective(col int, value Real) error {
+	_, err := C.set_obj(lp.lprec, C.int(col), C.REAL(value))
+	//todo: this function returns bool!
+	return err
+}
+
+func (lp *LP) SetMaximize() error {
+	_, err := C.set_maxim(lp.lprec)
+	return err
+}
+
+func (lp *LP) SetMinimize() error {
+	_, err := C.set_minim(lp.lprec)
+	return err
+}
+
+func (lp *LP) Solve() (SolverStatus, error) {
 	code, err := C.solve(lp.lprec)
-	check(err)
-	return ResultCode(code)
+	return SolverStatus(code), err
 }
 
-func (lp *LP) SetVerbosity(level Verbosity) {
+func (lp *LP) SetVerbosity(level Verbosity) error {
 	_, err := C.set_verbose(lp.lprec, C.int(level))
-	check(err)
+	return err
 }
 
 func GetVersion() *VersionInfo {
 	var major, minor, release, build C.int
 	_, err := C.lp_solve_version(&major, &minor, &release, &build)
-
-	fmt.Println(err)
+	check(err)
 
 	if err != nil {
 		panic("error getting version")
@@ -76,6 +95,7 @@ func GetVersion() *VersionInfo {
 
 func check(err error) {
 	if err != nil {
+		fmt.Println(err)
 		panic(err.Error())
 	}
 }

@@ -1,24 +1,21 @@
 package lpsolve
 
-type ResultCode int // result code returned by lpsolve
+type SolverStatus int
+
 const (
-	OutOfMemory ResultCode = -2
-	Error       ResultCode = -1
-)
-const (
-	Optimal ResultCode = iota
-	Suboptimal
-	InfeasibleModel
-	UnboundedModel
-	DegenerateModel
+	UnknownError SolverStatus = iota - 5
+	DataIgnored
+	NoBFP
+	NoMemory
+	NotRun
+	Optimal
+	SubOptimal
+	Infeasible
+	Unbounded
+	Degenerate
 	NumericalFailure
-	UserAborted
+	UserAbort
 	Timeout
-	Presolved
-	ProcFail
-	ProcBreak
-	FeasFound
-	NoFeasFound
 )
 
 type Verbosity int
