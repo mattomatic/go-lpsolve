@@ -1,0 +1,10 @@
+prefix=/usr/local/Cellar/lp_solve/5.5.2.0
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: liblpsolve
+Description: lp_solve library
+Version: 5.5.2.0
+Libs: -L${libdir} -llpsolve55
+Cflags: -I${includedir}

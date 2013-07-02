@@ -18,37 +18,39 @@ func TestGetVersion(t *testing.T) {
 
 func TestMakeLP(t *testing.T) {
 	lp := NewLP(2000, 10000)
-
+    defer lp.Delete()
+    
 	if lp == nil {
 		t.Error()
 	}
-
-	lp.Delete()
 }
 
 func TestPrintLP(t *testing.T) {
 	lp := NewLP(5, 10)
 	defer lp.Delete()
+	
 	lp.Print()
 }
 
 func TestLPSolve(t *testing.T) {
 	lp := NewLP(2, 2)
+	defer lp.Delete()
+	
 	code := lp.Solve()
 
 	if code != Optimal {
 		t.Error()
 	}
-
-	lp.Delete()
 }
 
 func TestLPSolveTwo(t *testing.T) {
 	lp := NewLP(2, 2)
+	defer lp.Delete()
+	
 	lp.SetValue(2, 2, 0.25)
 	lp.SetConstraintType(1, LE)
 	lp.Solve()
 	lp.Print()
 
-	lp.Delete()
+
 }
