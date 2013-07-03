@@ -39,4 +39,12 @@ const (
 	EQ                       // equal to
 )
 
+type BFPType string
+
+const (
+	BfpEtaPFI = "bfp_etaPFI" // original lp_solve product form of the inverse.
+	BfpLUSOL  = "bfp_LUSOL"  // LU decomposition.
+	BfpGLPK   = "bfp_GLPK"   // GLPK LU decomposition.
+)
+
 type Real float64

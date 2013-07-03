@@ -13,6 +13,12 @@ type VersionInfo struct {
 	Build   int
 }
 
+type Constraint struct {
+	Values []Real
+	Type   ConstraintType
+	Bound  Real
+}
+
 type LP struct {
 	lprec *C.lprec
 }
@@ -26,7 +32,7 @@ func NewLP(rows, cols int) *LP {
 	}
 
 	lp := &LP{lprec}
-	lp.SetVerbosity(Critical) // by default the verbosity is very high
+	//lp.SetVerbosity(Critical) // by default the verbosity is very high
 	return lp
 }
 
@@ -37,6 +43,11 @@ func (lp *LP) Delete() error {
 
 func (lp *LP) Print() error {
 	_, err := C.print_lp(lp.lprec)
+	return err
+}
+
+func (lp *LP) AddConstraint(c *Constraint) error {
+	_, err := C.add_constraint(lp.lprec, (*C.REAL)(&c.Values[0]), C.int(c.Type), C.REAL(c.Bound))
 	return err
 }
 
@@ -59,6 +70,16 @@ func (lp *LP) SetObjective(col int, value Real) error {
 	_, err := C.set_obj(lp.lprec, C.int(col), C.REAL(value))
 	//todo: this function returns bool!
 	return err
+}
+
+func (lp *LP) SetObjectiveFunction(values []Real) error {
+    _, err := C.set_obj_fn(lp.lprec, (*C.REAL)(&values[0]))
+    return err
+}
+
+func (lp *LP) GetVariable(col int) (Real, error) {
+	value, err := C.get_var_primalresult(lp.lprec, C.int(col))
+	return Real(value), err
 }
 
 func (lp *LP) SetMaximize() error {

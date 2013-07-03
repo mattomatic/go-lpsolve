@@ -1,6 +1,7 @@
 package lpsolve
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -67,11 +68,46 @@ func TestLPSolveTwo(t *testing.T) {
 	lp.SetValue(3, 2, 1)
 	lp.SetRh(3, 75)
 	lp.SetConstraintType(3, LE)
-	
+
 	lp.SetObjective(1, 143)
 	lp.SetObjective(2, 60)
 
-	lp.Solve()
-	lp.Print()
+	code, err := lp.Solve()
 
+	if code != Optimal {
+		t.Error()
+	}
+
+	if err != nil {
+		t.Error()
+	}
+
+	x, _ := lp.GetVariable(1)
+	y, _ := lp.GetVariable(2)
+
+	fmt.Println("x", x, "y", y)
+}
+
+func TestLPSolveThree(t *testing.T) {
+	lp := NewLP(0, 2) // ok so apparently we need to know this ahead of time!
+	defer lp.Delete()
+
+	c1 := &Constraint{[]Real{2, 120, 210}, LE, 15000}
+	c2 := &Constraint{[]Real{2, 110, 30}, LE, 4000}
+	c3 := &Constraint{[]Real{2, 1, 1}, LE, 75}
+	
+	lp.SetMaximize()	
+	lp.AddConstraint(c1)
+	lp.AddConstraint(c2)
+	lp.AddConstraint(c3)
+	lp.SetObjectiveFunction([]Real{2, 143, 60})
+
+	code, _ := lp.Solve()
+	
+	lp.Print()
+	if code != Optimal {
+	    t.Error()
+	}
+	
+	//lp.Delete()
 }
