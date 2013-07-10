@@ -1,8 +1,12 @@
 package lpsolve
 
 import (
-	"fmt"
+	"math"
 	"testing"
+)
+
+const (
+	Tolerance = 1e-9 // floating point error tolerance
 )
 
 func TestGetVersion(t *testing.T) {
@@ -73,41 +77,60 @@ func TestLPSolveTwo(t *testing.T) {
 	lp.SetObjective(2, 60)
 
 	code, err := lp.Solve()
+	variables, _ := lp.GetVariables()
 
 	if code != Optimal {
+		t.Error()
+	}
+
+	if len(variables) != 2 {
+		t.Error()
+	}
+
+	if !floatEquals(variables[0], 21.875) {
+		t.Error()
+	}
+
+	if !floatEquals(variables[1], 53.125) {
 		t.Error()
 	}
 
 	if err != nil {
 		t.Error()
 	}
-
-	x, _ := lp.GetVariable(1)
-	y, _ := lp.GetVariable(2)
-
-	fmt.Println("x", x, "y", y)
 }
 
 func TestLPSolveThree(t *testing.T) {
 	lp := NewLP(0, 2) // ok so apparently we need to know this ahead of time!
 	defer lp.Delete()
 
-	c1 := &Constraint{[]Real{2, 120, 210}, LE, 15000}
-	c2 := &Constraint{[]Real{2, 110, 30}, LE, 4000}
-	c3 := &Constraint{[]Real{2, 1, 1}, LE, 75}
-	
-	lp.SetMaximize()	
+	c1 := &Constraint{[]Real{0, 120, 210}, LE, 15000}
+	c2 := &Constraint{[]Real{0, 110, 30}, LE, 4000}
+	c3 := &Constraint{[]Real{0, 1, 1}, LE, 75}
+	ob := []Real{2, 143, 60}
+
+	lp.SetMaximize()
 	lp.AddConstraint(c1)
 	lp.AddConstraint(c2)
 	lp.AddConstraint(c3)
-	lp.SetObjectiveFunction([]Real{2, 143, 60})
+	lp.SetObjectiveFunction(ob)
 
 	code, _ := lp.Solve()
-	
-	lp.Print()
+	variables, _ := lp.GetVariables()
+
 	if code != Optimal {
-	    t.Error()
+		t.Error()
 	}
-	
-	//lp.Delete()
+
+	if !floatEquals(variables[0], 21.875) {
+		t.Error()
+	}
+
+	if !floatEquals(variables[1], 53.125) {
+		t.Error()
+	}
+}
+
+func floatEquals(a, b Real) bool {
+	return math.Dim(float64(a), float64(b)) <= Tolerance
 }

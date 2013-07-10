@@ -14,35 +14,34 @@ type VersionInfo struct {
 }
 
 type Constraint struct {
-	Values []Real
+	Values []Real // note: values should be n + 1 (column 0 is not considered!)
 	Type   ConstraintType
 	Bound  Real
 }
 
 type LP struct {
-	lprec *C.lprec
+	lprec     *C.lprec
+	variables []Real
 }
 
 func NewLP(rows, cols int) *LP {
 	// err keeps getting set to "no such file or directory" -- ignoring for now
 	lprec, _ := C.make_lp(C.int(rows), C.int(cols))
+	variables := make([]Real, cols, cols)
 
 	if lprec == nil {
 		panic("not enough memory to set up structures")
 	}
 
-	lp := &LP{lprec}
+	lp := &LP{lprec, variables}
+
 	//lp.SetVerbosity(Critical) // by default the verbosity is very high
+
 	return lp
 }
 
 func (lp *LP) Delete() error {
 	_, err := C.delete_lp(lp.lprec)
-	return err
-}
-
-func (lp *LP) Print() error {
-	_, err := C.print_lp(lp.lprec)
 	return err
 }
 
@@ -73,13 +72,13 @@ func (lp *LP) SetObjective(col int, value Real) error {
 }
 
 func (lp *LP) SetObjectiveFunction(values []Real) error {
-    _, err := C.set_obj_fn(lp.lprec, (*C.REAL)(&values[0]))
-    return err
+	_, err := C.set_obj_fn(lp.lprec, (*C.REAL)(&values[0]))
+	return err
 }
 
-func (lp *LP) GetVariable(col int) (Real, error) {
-	value, err := C.get_var_primalresult(lp.lprec, C.int(col))
-	return Real(value), err
+func (lp *LP) GetVariables() ([]Real, error) {
+	_, err := C.get_variables(lp.lprec, (*C.REAL)(&lp.variables[0]))
+	return lp.variables, err
 }
 
 func (lp *LP) SetMaximize() error {
@@ -99,6 +98,33 @@ func (lp *LP) Solve() (SolverStatus, error) {
 
 func (lp *LP) SetVerbosity(level Verbosity) error {
 	_, err := C.set_verbose(lp.lprec, C.int(level))
+	return err
+}
+
+// ====================================
+
+func (lp *LP) Print() error {
+	_, err := C.print_lp(lp.lprec)
+	return err
+}
+
+func (lp *LP) PrintDuals() error {
+	_, err := C.print_duals(lp.lprec)
+	return err
+}
+
+func (lp *LP) PrintConstraints() error {
+	_, err := C.print_constraints(lp.lprec, C.int(len(lp.variables)))
+	return err
+}
+
+func (lp *LP) PrintTableau() error {
+	_, err := C.print_tableau(lp.lprec)
+	return err
+}
+
+func (lp *LP) PrintSolution() error {
+	_, err := C.print_solution(lp.lprec, C.int(len(lp.variables)))
 	return err
 }
 
