@@ -19,29 +19,29 @@ type Constraint struct {
 	Type   ConstraintType
 	Bound  Real
 	Values []Real // this is the slice that gets exported
-    values []Real // note: values should be n + 1 (column 0 is not considered!)
+	values []Real // note: values should be n + 1 (column 0 is not considered!)
 }
 
 func NewConstraint(ctype ConstraintType, bound Real, values []Real) *Constraint {
-    hidden_values := make([]Real, len(values) + 1, len(values) + 1)
-    copy(hidden_values[1:], values)
-    public_values := hidden_values[1:]
-    return &Constraint{ctype, bound, public_values, hidden_values}
+	hidden_values := make([]Real, len(values)+1, len(values)+1)
+	copy(hidden_values[1:], values)
+	public_values := hidden_values[1:]
+	return &Constraint{ctype, bound, public_values, hidden_values}
 }
 
 // ====================================
 
 type Objective struct {
-	Type ObjectiveType
+	Type   ObjectiveType
 	Values []Real // this is the slice that gets exported
-    values []Real // note: values should be n + 1 (column 0 is not considered!)
+	values []Real // note: values should be n + 1 (column 0 is not considered!)
 }
 
 func NewObjective(otype ObjectiveType, values []Real) *Objective {
-    hidden_values := make([]Real, len(values) + 1, len(values) + 1)
-    copy(hidden_values[1:], values)
-    public_values := hidden_values[1:]
-    return &Objective{otype, public_values, hidden_values}
+	hidden_values := make([]Real, len(values)+1, len(values)+1)
+	copy(hidden_values[1:], values)
+	public_values := hidden_values[1:]
+	return &Objective{otype, public_values, hidden_values}
 }
 
 // ====================================
@@ -54,7 +54,8 @@ type LP struct {
 // ====================================
 
 func NewLP(cols int) *LP {
-	// err keeps getting set to "no such file or directory" -- ignoring for now
+	// note1: err keeps getting set to "no such file or directory" -- ignoring for now
+	// note2: just make the #rows 0, and add the rows incrementally
 	lprec, _ := C.make_lp(C.int(0), C.int(cols))
 	variables := make([]Real, cols, cols)
 
@@ -80,13 +81,16 @@ func (lp *LP) AddConstraint(c *Constraint) error {
 
 func (lp *LP) SetObjective(objective *Objective) error {
 	_, err := C.set_obj_fn(lp.lprec, (*C.REAL)(&objective.values[0]))
-	
+
 	switch objective.Type {
-	case Minimize: lp.SetMinimize()
-	case Maximize: lp.SetMaximize()
-	default: panic("Unhandled objective type")
-    }
-	
+	case Minimize:
+		lp.SetMinimize()
+	case Maximize:
+		lp.SetMaximize()
+	default:
+		panic("Unhandled objective type")
+	}
+
 	return err
 }
 

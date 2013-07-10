@@ -72,7 +72,7 @@ func TestLPSolveThree(t *testing.T) {
 	if code != Optimal {
 		t.Error()
 	}
-    
+
 	if !floatEquals(variables[0], 21.875) {
 		t.Error()
 	}

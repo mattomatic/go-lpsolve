@@ -48,8 +48,8 @@ const (
 type ObjectiveType int
 
 const (
-    Minimize ObjectiveType = iota
-    Maximize
+	Minimize ObjectiveType = iota
+	Maximize
 )
 
 // ====================================
