@@ -53,6 +53,7 @@ type LP struct {
 
 // ====================================
 
+// Initialize the data structures necessary to run lp
 func NewLP(cols int) *LP {
 	// note1: err keeps getting set to "no such file or directory" -- ignoring for now
 	// note2: just make the #rows 0, and add the rows incrementally
@@ -69,6 +70,9 @@ func NewLP(cols int) *LP {
 	return lp
 }
 
+// Delete everything associated with this lp
+// Note: It is important to run this call after creating an LP as the go runtime
+//       will *not* take care of cleaning up all the C structs for you.
 func (lp *LP) Delete() error {
 	_, err := C.delete_lp(lp.lprec)
 	return err
@@ -84,9 +88,9 @@ func (lp *LP) SetObjective(objective *Objective) error {
 
 	switch objective.Type {
 	case Minimize:
-		lp.SetMinimize()
+		lp.setMinimize()
 	case Maximize:
-		lp.SetMaximize()
+		lp.setMaximize()
 	default:
 		panic("Unhandled objective type")
 	}
@@ -94,19 +98,11 @@ func (lp *LP) SetObjective(objective *Objective) error {
 	return err
 }
 
+// Return the solution's variables. Must only call this after Solve has completed
+// successfully
 func (lp *LP) GetVariables() ([]Real, error) {
 	_, err := C.get_variables(lp.lprec, (*C.REAL)(&lp.variables[0]))
 	return lp.variables, err
-}
-
-func (lp *LP) SetMaximize() error {
-	_, err := C.set_maxim(lp.lprec)
-	return err
-}
-
-func (lp *LP) SetMinimize() error {
-	_, err := C.set_minim(lp.lprec)
-	return err
 }
 
 func (lp *LP) Solve() (SolverStatus, error) {
@@ -158,6 +154,18 @@ func GetVersion() *VersionInfo {
 	}
 
 	return &VersionInfo{int(major), int(minor), int(release), int(build)}
+}
+
+// ====================================
+
+func (lp *LP) setMaximize() error {
+	_, err := C.set_maxim(lp.lprec)
+	return err
+}
+
+func (lp *LP) setMinimize() error {
+	_, err := C.set_minim(lp.lprec)
+	return err
 }
 
 func check(err error) {
