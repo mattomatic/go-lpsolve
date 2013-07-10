@@ -56,16 +56,15 @@ func TestLPSolveThree(t *testing.T) {
 	lp := NewLP(2) // ok so apparently we need to know this ahead of time!
 	defer lp.Delete()
 
-	c1 := &Constraint{[]Real{0, 120, 210}, LE, 15000}
-	c2 := &Constraint{[]Real{0, 110, 30}, LE, 4000}
-	c3 := &Constraint{[]Real{0, 1, 1}, LE, 75}
-	ob := []Real{2, 143, 60}
+	c1 := NewConstraint(LE, 15000, []Real{120, 210})
+	c2 := NewConstraint(LE, 4000, []Real{110, 30})
+	c3 := NewConstraint(LE, 75, []Real{1, 1})
+	ob := NewObjective(Maximize, []Real{143, 60})
 
-	lp.SetMaximize()
 	lp.AddConstraint(c1)
 	lp.AddConstraint(c2)
 	lp.AddConstraint(c3)
-	lp.SetObjectiveFunction(ob)
+	lp.SetObjective(ob)
 
 	code, _ := lp.Solve()
 	variables, _ := lp.GetVariables()
@@ -73,7 +72,7 @@ func TestLPSolveThree(t *testing.T) {
 	if code != Optimal {
 		t.Error()
 	}
-
+    
 	if !floatEquals(variables[0], 21.875) {
 		t.Error()
 	}

@@ -18,6 +18,8 @@ const (
 	Timeout
 )
 
+// ====================================
+
 type Verbosity int
 
 const (
@@ -30,6 +32,8 @@ const (
 	Full
 )
 
+// ====================================
+
 type ConstraintType int
 
 const (
@@ -39,6 +43,17 @@ const (
 	EQ                       // equal to
 )
 
+// ====================================
+
+type ObjectiveType int
+
+const (
+    Minimize ObjectiveType = iota
+    Maximize
+)
+
+// ====================================
+
 type BFPType string
 
 const (
@@ -46,5 +61,7 @@ const (
 	BfpLUSOL  = "bfp_LUSOL"  // LU decomposition.
 	BfpGLPK   = "bfp_GLPK"   // GLPK LU decomposition.
 )
+
+// ====================================
 
 type Real float64

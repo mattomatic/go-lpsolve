@@ -13,11 +13,38 @@ type VersionInfo struct {
 	Build   int
 }
 
+// ====================================
+
 type Constraint struct {
-	Values []Real // note: values should be n + 1 (column 0 is not considered!)
 	Type   ConstraintType
 	Bound  Real
+	Values []Real // this is the slice that gets exported
+    values []Real // note: values should be n + 1 (column 0 is not considered!)
 }
+
+func NewConstraint(ctype ConstraintType, bound Real, values []Real) *Constraint {
+    hidden_values := make([]Real, len(values) + 1, len(values) + 1)
+    copy(hidden_values[1:], values)
+    public_values := hidden_values[1:]
+    return &Constraint{ctype, bound, public_values, hidden_values}
+}
+
+// ====================================
+
+type Objective struct {
+	Type ObjectiveType
+	Values []Real // this is the slice that gets exported
+    values []Real // note: values should be n + 1 (column 0 is not considered!)
+}
+
+func NewObjective(otype ObjectiveType, values []Real) *Objective {
+    hidden_values := make([]Real, len(values) + 1, len(values) + 1)
+    copy(hidden_values[1:], values)
+    public_values := hidden_values[1:]
+    return &Objective{otype, public_values, hidden_values}
+}
+
+// ====================================
 
 type LP struct {
 	lprec     *C.lprec
@@ -47,12 +74,19 @@ func (lp *LP) Delete() error {
 }
 
 func (lp *LP) AddConstraint(c *Constraint) error {
-	_, err := C.add_constraint(lp.lprec, (*C.REAL)(&c.Values[0]), C.int(c.Type), C.REAL(c.Bound))
+	_, err := C.add_constraint(lp.lprec, (*C.REAL)(&c.values[0]), C.int(c.Type), C.REAL(c.Bound))
 	return err
 }
 
-func (lp *LP) SetObjectiveFunction(values []Real) error {
-	_, err := C.set_obj_fn(lp.lprec, (*C.REAL)(&values[0]))
+func (lp *LP) SetObjective(objective *Objective) error {
+	_, err := C.set_obj_fn(lp.lprec, (*C.REAL)(&objective.values[0]))
+	
+	switch objective.Type {
+	case Minimize: lp.SetMinimize()
+	case Maximize: lp.SetMaximize()
+	default: panic("Unhandled objective type")
+    }
+	
 	return err
 }
 
