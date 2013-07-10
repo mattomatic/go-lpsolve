@@ -24,9 +24,11 @@ type LP struct {
 	variables []Real
 }
 
-func NewLP(rows, cols int) *LP {
+// ====================================
+
+func NewLP(cols int) *LP {
 	// err keeps getting set to "no such file or directory" -- ignoring for now
-	lprec, _ := C.make_lp(C.int(rows), C.int(cols))
+	lprec, _ := C.make_lp(C.int(0), C.int(cols))
 	variables := make([]Real, cols, cols)
 
 	if lprec == nil {
@@ -34,8 +36,7 @@ func NewLP(rows, cols int) *LP {
 	}
 
 	lp := &LP{lprec, variables}
-
-	//lp.SetVerbosity(Critical) // by default the verbosity is very high
+	lp.SetVerbosity(Critical) // by default the verbosity is very high
 
 	return lp
 }
@@ -47,27 +48,6 @@ func (lp *LP) Delete() error {
 
 func (lp *LP) AddConstraint(c *Constraint) error {
 	_, err := C.add_constraint(lp.lprec, (*C.REAL)(&c.Values[0]), C.int(c.Type), C.REAL(c.Bound))
-	return err
-}
-
-func (lp *LP) SetValue(row, col int, value Real) error {
-	_, err := C.set_mat(lp.lprec, C.int(row), C.int(col), C.REAL(value))
-	return err
-}
-
-func (lp *LP) SetRh(row int, value Real) error {
-	_, err := C.set_rh(lp.lprec, C.int(row), C.REAL(value))
-	return err
-}
-
-func (lp *LP) SetConstraintType(row int, ctype ConstraintType) error {
-	_, err := C.set_constr_type(lp.lprec, C.int(row), C.int(ctype))
-	return err
-}
-
-func (lp *LP) SetObjective(col int, value Real) error {
-	_, err := C.set_obj(lp.lprec, C.int(col), C.REAL(value))
-	//todo: this function returns bool!
 	return err
 }
 
@@ -96,11 +76,6 @@ func (lp *LP) Solve() (SolverStatus, error) {
 	return SolverStatus(code), err
 }
 
-func (lp *LP) SetVerbosity(level Verbosity) error {
-	_, err := C.set_verbose(lp.lprec, C.int(level))
-	return err
-}
-
 // ====================================
 
 func (lp *LP) Print() error {
@@ -125,6 +100,13 @@ func (lp *LP) PrintTableau() error {
 
 func (lp *LP) PrintSolution() error {
 	_, err := C.print_solution(lp.lprec, C.int(len(lp.variables)))
+	return err
+}
+
+// ====================================
+
+func (lp *LP) SetVerbosity(level Verbosity) error {
+	_, err := C.set_verbose(lp.lprec, C.int(level))
 	return err
 }
 
