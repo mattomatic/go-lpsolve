@@ -110,11 +110,11 @@ func TestResolve(t *testing.T) {
 	if !floatEquals(variables[1], 53.125) {
 		t.Error()
 	}
-	
+
 	lp.PrintConstraints()
-	
+
 	c1.Bound = 13000
-	
+
 	lp.Solve()
 	lp.PrintConstraints()
 }
